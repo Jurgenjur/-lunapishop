@@ -1,35 +1,823 @@
-let accessToken = null;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-async function loginWithPi() {
+  <title>LunaPiShop</title>
 
-  showStatus("Connecting to Pi Network...");
+  <!-- Pi Network SDK -->
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-  try {
+  <script>
+    Pi.init({
+      version: "2.0",
+      sandbox: false
+    });
+  </script>
 
-    const authResult = await Pi.authenticate(
-      ["username", "payments"],
-      onIncompletePaymentFound
-    );
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
 
-    accessToken = authResult.accessToken;
+    body {
+      background: #f5f6fa;
+      color: #222;
+    }
 
-    console.log(
-      "Pi authentication successful:",
-      authResult.user.username
-    );
+    header {
+      background: #24104f;
+      color: white;
+      padding: 22px 20px;
+      text-align: center;
+    }
 
-    document.getElementById("userInfo").innerHTML =
-      "🟣 Welcome, @" + authResult.user.username;
+    header h1 {
+      font-size: 30px;
+      margin-bottom: 6px;
+    }
 
-    showStatus("Connected to Pi Network ✅");
+    header p {
+      font-size: 15px;
+      opacity: 0.9;
+    }
 
-  } catch (error) {
+    .search {
+      padding: 20px;
+      text-align: center;
+      background: white;
+    }
 
-    console.error("Pi authentication error:", error);
+    .search input {
+      width: 90%;
+      max-width: 600px;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .categories {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 15px;
+    }
+
+    .categories button {
+      border: none;
+      background: white;
+      padding: 10px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 25px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .product {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .product .icon {
+      font-size: 55px;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .product h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .product p {
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .price {
+      color: #6b2bbf;
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .buy {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 9px;
+      background: #6b2bbf;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .buy:hover {
+      opacity: 0.9;
+    }
+
+    .buy:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+
+    .login {
+      display: block;
+      margin: 15px auto;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 10px;
+      background: #6b2bbf;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    footer {
+      margin-top: 30px;
+      background: #24104f;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+    }
+
+    #piStatus {
+      text-align: center;
+      margin: 15px auto;
+      padding: 12px;
+      max-width: 600px;
+      border-radius: 10px;
+      background: #eee;
+      color: #333;
+      display: none;
+    }
+
+    #userInfo {
+      text-align: center;
+      margin: 15px auto;
+      font-size: 16px;
+      color: #6b2bbf;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🌙 LunaPiShop</h1>
+  <p>🟣 Buy & Sell with Pi</p>
+</header>
+
+<div id="userInfo">
+  Not connected
+</div>
+
+<button class="login" onclick="loginWithPi()">
+  🟣 Login with Pi
+</button>
+
+<div id="piStatus"></div>
+
+<div class="search">
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search products..."
+    onkeyup="searchProducts()"
+  >
+</div>
+
+<div class="categories">
+  <button onclick="filterProducts('all')">All</button>
+  <button onclick="filterProducts('electronics')">Electronics</button>
+  <button onclick="filterProducts('fashion')">Fashion</button>
+  <button onclick="filterProducts('home')">Home</button>
+  <button onclick="filterProducts('services')">Services</button>
+  <button onclick="filterProducts('cars')">Cars</button>
+</div>
+
+<section class="products">
+
+  <div class="product" data-category="electronics">
+    <div class="icon">📱</div>
+    <h2>Smartphone</h2>
+    <p>Modern smartphone</p>
+    <div class="price">150 π</div>
+
+    <button
+      class="buy"
+      onclick="buyProduct('Smartphone', 150)"
+    >
+      🟣 Buy with Pi
+    </button>
+  </div>
+
+
+  <div class="product" data-category="electronics">
+    <div class="icon">💻</div>
+    <h2>Laptop</h2>
+    <p>Powerful laptop for work</p>
+    <div class="price">450 π</div>
+
+    <button
+      class="buy"
+      onclick="buyProduct('Laptop', 450)"
+    >
+      🟣 Buy with Pi
+    </button>
+  </div>
+
+
+  <div class="product" data-category="fashion">
+    <div class="icon">👟</div>
+    <h2>Shoes</h2>
+    <p>Comfortable everyday shoes</p>
+    <div class="price">50 π</div>
+
+    <button
+      class="buy"
+      onclick="buyProduct('Shoes', 50)"
+    >
+      🟣 Buy with Pi
+    </button>
+  </div>
+
+
+  <div class="product" data-category="services">
+    <div class="icon">🔧</div>
+    <h2>Repair Service</h2>
+    <p>Professional repair service</p>
+    <div class="price">20 π</div>
+
+    <button
+      class="buy"
+      onclick="buyProduct('Repair Service', 20)"
+    >
+      🟣 Buy with Pi
+    </button>
+  </div>
+
+
+  <div class="product" data-category="home">
+    <div class="icon">🏠</div>
+    <h2>Home Decoration</h2>
+    <p>Beautiful decoration items</p>
+    <div class="price">35 π</div>
+
+    <button
+      class="buy"
+      onclick="buyProduct('Home Decoration', 35)"
+    >
+      🟣 Buy with Pi
+    </button>
+  </div>
+
+
+  <div class="product" data-category="cars">
+    <div class="icon">🚗</div>
+    <h2>Car Accessories</h2>
+    <p>Accessories for your car</p>
+    <div class="price">25 π</div>
+
+    <button
+      class="buy"
+      onclick="buyProduct('Car Accessories', 25)"
+    >
+      🟣 Buy with Pi
+    </button>
+  </div>
+
+</section>
+
+<footer>
+  © 2026 LunaPiShop — Powered by Pi Network
+</footer>
+
+
+<script>
+
+  // ==========================================
+  // BACKEND
+  // ==========================================
+
+  const BACKEND_URL =
+    "https://lunapishop-backend.onrender.com";
+
+
+  // ==========================================
+  // USER AUTHENTICATION
+  // ==========================================
+
+  let accessToken = null;
+  let currentUser = null;
+
+
+  async function loginWithPi() {
 
     showStatus(
-      "Pi authentication failed. Please open LunaPiShop inside Pi Browser."
+      "Connecting to Pi Network..."
+    );
+
+    try {
+
+      const authResult = await Pi.authenticate(
+        ["username", "payments"],
+        onIncompletePaymentFound
+      );
+
+      accessToken =
+        authResult.accessToken;
+
+      currentUser =
+        authResult.user;
+
+      console.log(
+        "Pi authentication successful:",
+        currentUser.username
+      );
+
+
+      document.getElementById(
+        "userInfo"
+      ).innerHTML =
+        "🟣 Welcome, @" +
+        currentUser.username;
+
+
+      showStatus(
+        "Connected to Pi Network ✅"
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Pi authentication error:",
+        error
+      );
+
+      showStatus(
+        "❌ Pi authentication failed."
+      );
+
+    }
+
+  }
+
+
+  // ==========================================
+  // INCOMPLETE PAYMENT
+  // ==========================================
+
+  function onIncompletePaymentFound(payment) {
+
+    console.log(
+      "Incomplete payment found:",
+      payment
+    );
+
+    showStatus(
+      "⚠️ An incomplete Pi payment was found."
     );
 
   }
-}
+
+
+  // ==========================================
+  // BUY PRODUCT
+  // ==========================================
+
+  function buyProduct(product, amount) {
+
+    if (
+      typeof Pi === "undefined" ||
+      typeof Pi.createPayment !== "function"
+    ) {
+
+      showStatus(
+        "❌ Pi SDK is not available."
+      );
+
+      return;
+    }
+
+
+    if (!accessToken) {
+
+      showStatus(
+        "Please login with Pi first."
+      );
+
+      loginWithPi();
+
+      return;
+    }
+
+
+    showStatus(
+      "Opening Pi payment..."
+    );
+
+
+    Pi.createPayment(
+
+      {
+
+        amount: amount,
+
+        memo:
+          "LunaPiShop - " +
+          product,
+
+        metadata: {
+
+          product:
+            product,
+
+          price:
+            amount
+
+        }
+
+      },
+
+
+      {
+
+
+        // ====================================
+        // SERVER APPROVAL
+        // ====================================
+
+        onReadyForServerApproval:
+          async function(paymentId) {
+
+            console.log(
+              "Approval requested:",
+              paymentId
+            );
+
+
+            try {
+
+              const response =
+                await fetch(
+                  BACKEND_URL +
+                  "/api/payments/approve",
+                  {
+
+                    method: "POST",
+
+                    headers: {
+
+                      "Content-Type":
+                        "application/json",
+
+                      "Authorization":
+                        "Bearer " +
+                        accessToken
+
+                    },
+
+                    body:
+                      JSON.stringify({
+
+                        paymentId:
+                          paymentId
+
+                      })
+
+                  }
+                );
+
+
+              if (!response.ok) {
+
+                const errorText =
+                  await response.text();
+
+                throw new Error(
+                  errorText
+                );
+
+              }
+
+
+              console.log(
+                "Payment approved."
+              );
+
+
+              showStatus(
+                "Payment approved. Confirm it in Pi Wallet."
+              );
+
+
+            } catch (error) {
+
+              console.error(
+                "Approval error:",
+                error
+              );
+
+
+              showStatus(
+                "❌ Payment approval failed."
+              );
+
+            }
+
+          },
+
+
+        // ====================================
+        // SERVER COMPLETION
+        // ====================================
+
+        onReadyForServerCompletion:
+          async function(paymentId, txid) {
+
+            console.log(
+              "Completion requested:",
+              paymentId,
+              txid
+            );
+
+
+            try {
+
+              const response =
+                await fetch(
+                  BACKEND_URL +
+                  "/api/payments/complete",
+                  {
+
+                    method: "POST",
+
+                    headers: {
+
+                      "Content-Type":
+                        "application/json",
+
+                      "Authorization":
+                        "Bearer " +
+                        accessToken
+
+                    },
+
+                    body:
+                      JSON.stringify({
+
+                        paymentId:
+                          paymentId,
+
+                        txid:
+                          txid
+
+                      })
+
+                  }
+                );
+
+
+              const data =
+                await response.json();
+
+
+              if (!response.ok) {
+
+                throw new Error(
+                  data.error ||
+                  "Completion failed"
+                );
+
+              }
+
+
+              console.log(
+                "Payment completed:",
+                data
+              );
+
+
+              showStatus(
+                "🎉 Payment completed successfully!"
+              );
+
+
+              alert(
+                "✅ Payment successful!\n\n" +
+                product +
+                "\n" +
+                amount +
+                " Pi"
+              );
+
+
+            } catch (error) {
+
+              console.error(
+                "Completion error:",
+                error
+              );
+
+
+              showStatus(
+                "❌ Payment completion failed."
+              );
+
+            }
+
+          },
+
+
+        // ====================================
+        // CANCEL
+        // ====================================
+
+        onCancel:
+          function(paymentId) {
+
+            console.log(
+              "Payment cancelled:",
+              paymentId
+            );
+
+            showStatus(
+              "❌ Payment cancelled."
+            );
+
+          },
+
+
+        // ====================================
+        // ERROR
+        // ====================================
+
+        onError:
+          function(error, payment) {
+
+            console.error(
+              "Pi payment error:",
+              error,
+              payment
+            );
+
+            showStatus(
+              "❌ Payment error: " +
+              (error.message || error)
+            );
+
+          }
+
+      }
+
+    );
+
+  }
+
+
+  // ==========================================
+  // STATUS
+  // ==========================================
+
+  function showStatus(message) {
+
+    const status =
+      document.getElementById(
+        "piStatus"
+      );
+
+    status.innerText =
+      message;
+
+    status.style.display =
+      "block";
+
+  }
+
+
+  // ==========================================
+  // CATEGORY FILTER
+  // ==========================================
+
+  function filterProducts(category) {
+
+    const products =
+      document.querySelectorAll(
+        ".product"
+      );
+
+
+    products.forEach(product => {
+
+      if (
+        category === "all" ||
+        product.dataset.category === category
+      ) {
+
+        product.style.display =
+          "block";
+
+      } else {
+
+        product.style.display =
+          "none";
+
+      }
+
+    });
+
+  }
+
+
+  // ==========================================
+  // SEARCH
+  // ==========================================
+
+  function searchProducts() {
+
+    const search =
+      document
+        .getElementById(
+          "searchInput"
+        )
+        .value
+        .toLowerCase();
+
+
+    const products =
+      document.querySelectorAll(
+        ".product"
+      );
+
+
+    products.forEach(product => {
+
+      const text =
+        product.innerText
+          .toLowerCase();
+
+
+      if (
+        text.includes(search)
+      ) {
+
+        product.style.display =
+          "block";
+
+      } else {
+
+        product.style.display =
+          "none";
+
+      }
+
+    });
+
+  }
+
+
+  // ==========================================
+  // PAGE LOAD
+  // ==========================================
+
+  window.addEventListener(
+    "load",
+    function() {
+
+      console.log(
+        "LunaPiShop loaded."
+      );
+
+      console.log(
+        "Pi SDK available:",
+        typeof Pi !== "undefined"
+      );
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
