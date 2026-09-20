@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LunaPiShop</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f5f6fa;
+      color: #222;
+    }
+
+    header {
+      background: #24104f;
+      color: white;
+      padding: 22px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 30px;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      font-size: 15px;
+      opacity: 0.9;
+    }
+
+    .search {
+      padding: 20px;
+      text-align: center;
+      background: white;
+    }
+
+    .search input {
+      width: 90%;
+      max-width: 600px;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .categories {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 15px;
+    }
+
+    .categories button {
+      border: none;
+      background: white;
+      padding: 10px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 25px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .product {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .product .icon {
+      font-size: 55px;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .product h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .product p {
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .price {
+      color: #6b2bbf;
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .buy {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 9px;
+      background: #6b2bbf;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .buy:hover {
+      opacity: 0.9;
+    }
+
+    footer {
+      margin-top: 30px;
+      background: #24104f;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>🌙 LunaPiShop</h1>
+    <p>🟣 Buy & Sell with Pi</p>
+  </header>
+
+  <div class="search">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search products..."
+      onkeyup="searchProducts()"
+    >
+  </div>
+
+  <div class="categories">
+    <button onclick="filterProducts('all')">All</button>
+    <button onclick="filterProducts('electronics')">Electronics</button>
+    <button onclick="filterProducts('fashion')">Fashion</button>
+    <button onclick="filterProducts('home')">Home</button>
+    <button onclick="filterProducts('services')">Services</button>
+    <button onclick="filterProducts('cars')">Cars</button>
+  </div>
+
+  <section class="products">
+
+    <div class="product" data-category="electronics">
+      <div class="icon">📱</div>
+      <h2>Smartphone</h2>
+      <p>Modern smartphone</p>
+      <div class="price">150 π</div>
+      <button class="buy" onclick="buyProduct('Smartphone')">
+        Buy with Pi
+      </button>
+    </div>
+
+    <div class="product" data-category="electronics">
+      <div class="icon">💻</div>
+      <h2>Laptop</h2>
+      <p>Powerful laptop for work</p>
+      <div class="price">450 π</div>
+      <button class="buy" onclick="buyProduct('Laptop')">
+        Buy with Pi
+      </button>
+    </div>
+
+    <div class="product" data-category="fashion">
+      <div class="icon">👟</div>
+      <h2>Shoes</h2>
+      <p>Comfortable everyday shoes</p>
+      <div class="price">50 π</div>
+      <button class="buy" onclick="buyProduct('Shoes')">
+        Buy with Pi
+      </button>
+    </div>
+
+    <div class="product" data-category="services">
+      <div class="icon">🔧</div>
+      <h2>Repair Service</h2>
+      <p>Professional repair service</p>
+      <div class="price">20 π</div>
+      <button class="buy" onclick="buyProduct('Repair Service')">
+        Buy with Pi
+      </button>
+    </div>
+
+    <div class="product" data-category="home">
+      <div class="icon">🏠</div>
+      <h2>Home Decoration</h2>
+      <p>Beautiful decoration items</p>
+      <div class="price">35 π</div>
+      <button class="buy" onclick="buyProduct('Home Decoration')">
+        Buy with Pi
+      </button>
+    </div>
+
+    <div class="product" data-category="cars">
+      <div class="icon">🚗</div>
+      <h2>Car Accessories</h2>
+      <p>Accessories for your car</p>
+      <div class="price">25 π</div>
+      <button class="buy" onclick="buyProduct('Car Accessories')">
+        Buy with Pi
+      </button>
+    </div>
+
+  </section>
+
+  <footer>
+    © 2026 LunaPiShop — Powered by Pi Network
+  </footer>
+
+  <script>
+
+    function buyProduct(product) {
+      alert(
+        "You selected: " + product +
+        "\\n\\nPi payment will be connected in the next version."
+      );
+    }
+
+    function filterProducts(category) {
+      const products = document.querySelectorAll(".product");
+
+      products.forEach(product => {
+        if (
+          category === "all" ||
+          product.dataset.category === category
+        ) {
+          product.style.display = "block";
+        } else {
+          product.style.display = "none";
+        }
+      });
+    }
+
+    function searchProducts() {
+      const search =
+        document.getElementById("searchInput")
+        .value
+        .toLowerCase();
+
+      const products = document.querySelectorAll(".product");
+
+      products.forEach(product => {
+        const text = product.innerText.toLowerCase();
+
+        if (text.includes(search)) {
+          product.style.display = "block";
+        } else {
+          product.style.display = "none";
+        }
+      });
+    }
+
+  </script>
+
+</body>
+</html>
